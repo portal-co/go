@@ -64,13 +64,19 @@ func argv_index(argv **byte, i int32) *byte {
 }
 
 func args(c int32, v **byte) {
-	argc = c
-	argv = v
-	sysargs(c, v)
+	if !isarchive && !islibrary {
+		argc = c
+		argv = v
+		sysargs(c, v)
+	}
 }
 
 func goargs() {
 	if GOOS == "windows" {
+		return
+	}
+	if isarchive || islibrary {
+		argslice = []string{}
 		return
 	}
 	argslice = make([]string, argc)
@@ -80,6 +86,10 @@ func goargs() {
 }
 
 func goenvs_unix() {
+	if isarchive || islibrary {
+		envs = []string{}
+		return
+	}
 	// TODO(austin): ppc64 in dynamic linking mode doesn't
 	// guarantee env[] will immediately follow argv. Might cause
 	// problems.

@@ -54,12 +54,19 @@ func gotraceback() (level int32, all, crash bool) {
 var (
 	argc int32
 	argv **byte
+	none byte = 0
 )
 
 // nosplit for use in linux startup sysargs.
 //
 //go:nosplit
 func argv_index(argv **byte, i int32) *byte {
+	if isarchive || islibrary {
+		if i == 0 || i == 1 {
+			return &none
+		}
+		return nil
+	}
 	return *(**byte)(add(unsafe.Pointer(argv), uintptr(i)*goarch.PtrSize))
 }
 
@@ -68,6 +75,8 @@ func args(c int32, v **byte) {
 		argc = c
 		argv = v
 		sysargs(c, v)
+	} else {
+		argc = 1
 	}
 }
 
@@ -76,7 +85,7 @@ func goargs() {
 		return
 	}
 	if isarchive || islibrary {
-		argslice = []string{}
+		argslice = make([]string, 0)
 		return
 	}
 	argslice = make([]string, argc)
@@ -87,7 +96,7 @@ func goargs() {
 
 func goenvs_unix() {
 	if isarchive || islibrary {
-		envs = []string{}
+		envs = make([]string, 0)
 		return
 	}
 	// TODO(austin): ppc64 in dynamic linking mode doesn't

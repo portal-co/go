@@ -364,7 +364,8 @@ func mallocinit() {
 	// Check physPageSize.
 	if physPageSize == 0 {
 		// The OS init code failed to fetch the physical page size.
-		throw("failed to get system page size")
+		// throw("failed to get system page size")
+		physPageSize = 4096 //hack
 	}
 	if physPageSize > maxPhysPageSize {
 		print("system page size (", physPageSize, ") is larger than maximum page size (", maxPhysPageSize, ")\n")
